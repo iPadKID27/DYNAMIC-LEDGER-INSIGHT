@@ -12,10 +12,62 @@ class _NetWorthViewState extends State<NetWorthView> {
   String _selectedTimeframe = 'Year'; // 'Week', 'Month', 'Year'
 
   // --- Goals State (Moved from ActivityView) ---
+  final List<String> _availableAssets = [
+    'Cash',
+    'Bitcoin',
+    'Gold',
+    'Alphabet',
+    'Amazon',
+    'Apple',
+    'Meta Platforms',
+    'Microsoft',
+    'NVIDIA',
+    'Tesla',
+  ];
+
+  final Map<String, IconData> _assetIcons = {
+    'Cash': Icons.account_balance_wallet_rounded,
+    'Bitcoin': Icons.currency_bitcoin_rounded,
+    'Gold': Icons.workspace_premium_rounded,
+    'Alphabet': Icons.search_rounded,
+    'Amazon': Icons.shopping_bag_rounded,
+    'Apple': Icons.apple,
+    'Meta Platforms': Icons.facebook_rounded,
+    'Microsoft': Icons.grid_view_rounded,
+    'NVIDIA': Icons.memory_rounded,
+    'Tesla': Icons.electric_car_rounded,
+  };
+
+  final Map<String, String> _assetPrices = {
+    'Cash': '\$12,450',
+    'Bitcoin': '\$68,420.00',
+    'Gold': '\$2,350.40/oz',
+    'Alphabet': '\$175.20',
+    'Amazon': '\$182.15',
+    'Apple': '\$190.40',
+    'Meta Platforms': '\$475.30',
+    'Microsoft': '\$420.10',
+    'NVIDIA': '\$950.40',
+    'Tesla': '\$170.60',
+  };
+
+  final Map<String, List<FlSpot>> _assetSparklines = {
+    'Cash': const [FlSpot(0, 1), FlSpot(1, 1.1), FlSpot(2, 1.05), FlSpot(3, 1.2), FlSpot(4, 1.15)],
+    'Bitcoin': const [FlSpot(0, 1), FlSpot(1, 0.8), FlSpot(2, 1.5), FlSpot(3, 1.2), FlSpot(4, 2.1)],
+    'Gold': const [FlSpot(0, 1), FlSpot(1, 1.05), FlSpot(2, 1.1), FlSpot(3, 1.08), FlSpot(4, 1.25)],
+    'Alphabet': const [FlSpot(0, 1), FlSpot(1, 1.2), FlSpot(2, 1.15), FlSpot(3, 1.3), FlSpot(4, 1.4)],
+    'Amazon': const [FlSpot(0, 1), FlSpot(1, 1.1), FlSpot(2, 1.3), FlSpot(3, 1.2), FlSpot(4, 1.5)],
+    'Apple': const [FlSpot(0, 1), FlSpot(1, 1.05), FlSpot(2, 1.02), FlSpot(3, 1.08), FlSpot(4, 1.12)],
+    'Meta Platforms': const [FlSpot(0, 1), FlSpot(1, 1.4), FlSpot(2, 1.3), FlSpot(3, 1.6), FlSpot(4, 1.8)],
+    'Microsoft': const [FlSpot(0, 1), FlSpot(1, 1.1), FlSpot(2, 1.2), FlSpot(3, 1.15), FlSpot(4, 1.3)],
+    'NVIDIA': const [FlSpot(0, 1), FlSpot(1, 1.5), FlSpot(2, 2.2), FlSpot(3, 2.8), FlSpot(4, 3.5)],
+    'Tesla': const [FlSpot(0, 1), FlSpot(1, 0.9), FlSpot(2, 0.8), FlSpot(3, 0.85), FlSpot(4, 0.75)],
+  };
+
   final List<Goal> _goals = [
-    Goal(title: 'New Car', targetAmount: 20000, currentAmount: 5000, color: Colors.blue),
-    Goal(title: 'Emergency Fund', targetAmount: 10000, currentAmount: 8500, color: Colors.green),
-    Goal(title: 'Vacation', targetAmount: 5000, currentAmount: 1200, color: Colors.orange),
+    Goal(title: 'New Car', targetAmount: 20000, currentAmount: 5000, color: Colors.blue, linkedAsset: 'Savings'),
+    Goal(title: 'Emergency Fund', targetAmount: 10000, currentAmount: 8500, color: Colors.green, linkedAsset: 'Cash'),
+    Goal(title: 'Vacation', targetAmount: 5000, currentAmount: 1200, color: Colors.orange, linkedAsset: 'Savings'),
   ];
 
   void _addNewGoal() {
@@ -26,76 +78,176 @@ class _NetWorthViewState extends State<NetWorthView> {
       builder: (context) {
         String title = '';
         double target = 0;
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          builder: (context, scrollController) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-            ),
-            padding: const EdgeInsets.all(24),
-            child: SingleChildScrollView(
-              controller: scrollController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        String? selectedAsset;
+
+        return StatefulBuilder(
+          builder: (context, setModalState) => DraggableScrollableSheet(
+            initialChildSize: 0.85,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) => Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8F9FE),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+              ),
+              child: Stack(
                 children: [
-                  const Text(
-                    'Create New Goal',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 32),
-                  const Text('What are you saving for?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey)),
-                  const SizedBox(height: 12),
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'e.g., New Laptop',
-                      filled: true,
-                      fillColor: const Color(0xFFF5F5F7),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                    ),
-                    onChanged: (value) => title = value,
-                  ),
-                  const SizedBox(height: 24),
-                  const Text('Target Amount', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey)),
-                  const SizedBox(height: 12),
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: '0.00',
-                      prefixText: '\$ ',
-                      filled: true,
-                      fillColor: const Color(0xFFF5F5F7),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-                    ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) => target = double.tryParse(value) ?? 0,
-                  ),
-                  const SizedBox(height: 40),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (title.isNotEmpty && target > 0) {
-                          setState(() {
-                            _goals.add(Goal(
-                              title: title,
-                              targetAmount: target,
-                              currentAmount: 0,
-                              color: Colors.primaries[_goals.length % Colors.primaries.length],
-                            ));
-                          });
-                          Navigator.pop(context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4F3FF0),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  // Top Gradient Accent
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 180,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF8E84FF), Color(0xFF4F3FF0)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
                       ),
-                      child: const Text('Create Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                     ),
+                  ),
+                  Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(10)),
+                      ),
+                      const SizedBox(height: 24),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Create New Goal',
+                              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+                          ),
+                          padding: const EdgeInsets.all(24),
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 8),
+                                const Text('What are you saving for?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.grey)),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g., New Laptop',
+                                    hintStyle: TextStyle(color: Colors.grey[400], fontWeight: FontWeight.w400),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF5F5F7),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                                  ),
+                                  onChanged: (value) => title = value,
+                                ),
+                                const SizedBox(height: 24),
+                                const Text('Target Value', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.grey)),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                                  decoration: InputDecoration(
+                                    hintText: '0.00',
+                                    prefixIcon: const Icon(Icons.attach_money, color: Color(0xFF4F3FF0)),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF5F5F7),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) => target = double.tryParse(value) ?? 0,
+                                ),
+                                const SizedBox(height: 32),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Stacking on (Asset)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A))),
+                                    Text('See all', style: TextStyle(color: Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _availableAssets.length,
+                                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    String asset = _availableAssets[index];
+                                    bool isSelected = selectedAsset == asset;
+                                    return _buildAssetSelectionCard(
+                                      asset,
+                                      isSelected,
+                                      () => setModalState(() => selectedAsset = isSelected ? null : asset),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 40),
+                                Container(
+                                  width: double.infinity,
+                                  height: 65,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF8E84FF), Color(0xFF4F3FF0)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(24),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF4F3FF0).withValues(alpha: 0.3),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      if (title.isNotEmpty && target > 0) {
+                                        setState(() {
+                                          _goals.add(Goal(
+                                            title: title,
+                                            targetAmount: target,
+                                            currentAmount: 0,
+                                            color: Colors.primaries[_goals.length % Colors.primaries.length],
+                                            linkedAsset: selectedAsset,
+                                          ));
+                                        });
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                    ),
+                                    child: const Text('Create Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -103,6 +255,116 @@ class _NetWorthViewState extends State<NetWorthView> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAssetSelectionCard(String asset, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : const Color(0xFFFBFBFF),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF4F3FF0) : Colors.grey.withValues(alpha: 0.05),
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: const Color(0xFF4F3FF0).withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              : [],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF4F3FF0).withValues(alpha: 0.1) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 4,
+                  )
+                ],
+              ),
+              child: Icon(
+                _assetIcons[asset],
+                size: 24,
+                color: isSelected ? const Color(0xFF4F3FF0) : Colors.black87,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    asset,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected ? const Color(0xFF4F3FF0) : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _assetPrices[asset] ?? '',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: SizedBox(
+                height: 35,
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(show: false),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: _assetSparklines[asset] ?? [],
+                        isCurved: true,
+                        color: isSelected ? const Color(0xFF4F3FF0) : Colors.grey[300],
+                        barWidth: 2.5,
+                        isStrokeCapRound: true,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: (isSelected ? const Color(0xFF4F3FF0) : Colors.grey[300]!).withValues(alpha: 0.05),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF4F3FF0) : Colors.grey[300]!,
+                  width: 2,
+                ),
+                color: isSelected ? const Color(0xFF4F3FF0) : Colors.transparent,
+              ),
+              child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -447,7 +709,23 @@ class _NetWorthViewState extends State<NetWorthView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(goal.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A)), overflow: TextOverflow.ellipsis),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(goal.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A)), overflow: TextOverflow.ellipsis),
+                    if (goal.linkedAsset != null)
+                      Row(
+                        children: [
+                          Icon(_assetIcons[goal.linkedAsset] ?? Icons.help_outline, size: 12, color: Colors.grey[500]),
+                          const SizedBox(width: 4),
+                          Text(
+                            'on ${goal.linkedAsset}',
+                            style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.all(6),
@@ -490,6 +768,13 @@ class Goal {
   final double targetAmount;
   double currentAmount;
   final Color color;
+  final String? linkedAsset;
 
-  Goal({required this.title, required this.targetAmount, required this.currentAmount, required this.color});
+  Goal({
+    required this.title,
+    required this.targetAmount,
+    required this.currentAmount,
+    required this.color,
+    this.linkedAsset,
+  });
 }

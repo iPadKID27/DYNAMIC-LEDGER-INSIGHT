@@ -24,175 +24,182 @@ class _ActivityViewState extends State<ActivityView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final themeColor = theme.colorScheme.primary;
-    final textMain = theme.textTheme.bodyLarge?.color ?? Colors.black;
-    final textMuted = Colors.grey;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF8F9FE),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              // Custom Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black12),
-                    ),
-                    child: const Icon(Icons.arrow_back_ios_new, size: 18),
-                  ),
-                  const Text(
-                    'Activity',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black12),
-                    ),
-                    child: const Icon(Icons.description_outlined, size: 20),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 25),
-
-              // Activity Calendar Card
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      themeColor.withValues(alpha: 0.1),
-                      themeColor.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Current Balance',
-                              style: TextStyle(color: textMuted, fontSize: 14),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              '\$12,450.00',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        PopupMenuButton<String>(
-                          initialValue: _selectedPeriod,
-                          onSelected: (String value) {
-                            setState(() {
-                              _selectedPeriod = value;
-                            });
-                          },
-                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
-                              value: 'Day',
-                              child: Text('Day'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'Week',
-                              child: Text('Week'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'Month',
-                              child: Text('Month'),
-                            ),
-                            const PopupMenuItem<String>(
-                              value: 'Year',
-                              child: Text('Year'),
-                            ),
-                          ],
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.black12),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(_selectedPeriod,
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                                const Icon(Icons.keyboard_arrow_down, size: 16),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      'Activity',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1A1A1A),
+                      ),
                     ),
-                    const SizedBox(height: 30),
-                    // Dynamic Content based on selection
-                    if (_selectedPeriod == 'Day')
-                      _buildCalendarView(themeColor, textMain, textMuted)
-                    else if (_selectedPeriod == 'Week')
-                      _buildWeekView(themeColor, textMain, textMuted)
-                    else if (_selectedPeriod == 'Month')
-                      _buildMonthView(themeColor, textMain, textMuted)
-                    else
-                      _buildYearView(themeColor, textMain, textMuted),
+                    _buildTimeframeSelector(),
                   ],
                 ),
-              ),
-              const SizedBox(height: 30),
+                const SizedBox(height: 32),
 
-              // Breakdown Section
-              Text(
-                _getBreakdownTitle(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 15),
-              _buildBreakdownContent(),
-              const SizedBox(height: 100), // Space for FAB
-            ],
+                // Balance Card (Matches NetWorth Summary)
+                _buildBalanceSummaryCard(),
+                const SizedBox(height: 32),
+
+                // Dynamic Content based on selection
+                if (_selectedPeriod == 'Day')
+                  _buildCalendarView()
+                else if (_selectedPeriod == 'Week')
+                  _buildWeekView()
+                else if (_selectedPeriod == 'Month')
+                  _buildMonthView()
+                else
+                  _buildYearView(),
+
+                const SizedBox(height: 32),
+
+                // Breakdown Section
+                Text(
+                  _getBreakdownTitle(),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildBreakdownContent(),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildTimeframeSelector() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: ['Day', 'Week', 'Month', 'Year'].map((timeframe) {
+          bool isSelected = _selectedPeriod == timeframe;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedPeriod = timeframe),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF4F3FF0) : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                timeframe,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBalanceSummaryCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8E84FF), Color(0xFF4F3FF0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4F3FF0).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Current Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  SizedBox(height: 4),
+                  Text(
+                    '\$12,450.00',
+                    style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.description_outlined, color: Colors.white, size: 24),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              _buildSimpleStat('Income', '+\$2,450'),
+              const SizedBox(width: 40),
+              _buildSimpleStat('Expense', '-\$1,200'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimpleStat(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+      ],
+    );
+  }
+
   String _getBreakdownTitle() {
-    switch (_selectedPeriod) {
-      case 'Day':
-        return 'Daily Breakdown';
-      case 'Week':
-        return 'Week Breakdown';
-      case 'Month':
-        return 'Month Breakdown';
-      case 'Year':
-        return 'Year Breakdown';
-      default:
-        return 'Breakdown';
-    }
+    return '$_selectedPeriod Breakdown';
   }
 
   Widget _buildBreakdownContent() {
@@ -205,9 +212,9 @@ class _ActivityViewState extends State<ActivityView> {
   Widget _buildDayBreakdown() {
     return Column(
       children: [
-        _buildDetailItem('Grocery', '-\$120.00', '11:00 AM', Colors.orange),
-        _buildDetailItem('Uber', '-\$15.50', '02:30 PM', Colors.black),
-        _buildDetailItem('Subscription', '-\$9.99', '08:00 PM', Colors.blue),
+        _buildDetailItem('Grocery', '-\$120.00', '11:00 AM', Colors.orange, Icons.shopping_basket_rounded),
+        _buildDetailItem('Uber', '-\$15.50', '02:30 PM', Colors.black, Icons.directions_car_rounded),
+        _buildDetailItem('Subscription', '-\$9.99', '08:00 PM', Colors.blue, Icons.subscriptions_rounded),
       ],
     );
   }
@@ -215,10 +222,10 @@ class _ActivityViewState extends State<ActivityView> {
   Widget _buildWeekBreakdown() {
     return Column(
       children: [
-        _buildDetailItem('Monday', '-\$340.00', '4 transactions', Colors.deepPurple),
-        _buildDetailItem('Tuesday', '-\$120.50', '2 transactions', Colors.deepPurple),
-        _buildDetailItem('Wednesday', '-\$1,200.00', 'Rent & Bills', Colors.red),
-        _buildDetailItem('Thursday', '-\$45.00', '1 transaction', Colors.deepPurple),
+        _buildDetailItem('Monday', '-\$340.00', '4 transactions', Colors.deepPurple, Icons.calendar_today_rounded),
+        _buildDetailItem('Tuesday', '-\$120.50', '2 transactions', Colors.deepPurple, Icons.calendar_today_rounded),
+        _buildDetailItem('Wednesday', '-\$1,200.00', 'Rent & Bills', Colors.red, Icons.home_rounded),
+        _buildDetailItem('Thursday', '-\$45.00', '1 transaction', Colors.deepPurple, Icons.calendar_today_rounded),
       ],
     );
   }
@@ -226,10 +233,10 @@ class _ActivityViewState extends State<ActivityView> {
   Widget _buildMonthBreakdown() {
     return Column(
       children: [
-        _buildDetailItem('Week 1', '-\$1,450.00', 'Apr 1 - Apr 7', Colors.blue),
-        _buildDetailItem('Week 2', '-\$980.00', 'Apr 8 - Apr 14', Colors.blue),
-        _buildDetailItem('Week 3', '-\$2,100.00', 'Apr 15 - Apr 21', Colors.red),
-        _buildDetailItem('Week 4', '-\$450.00', 'Apr 22 - Apr 30', Colors.blue),
+        _buildDetailItem('Week 1', '-\$1,450.00', 'Apr 1 - Apr 7', Colors.blue, Icons.date_range_rounded),
+        _buildDetailItem('Week 2', '-\$980.00', 'Apr 8 - Apr 14', Colors.blue, Icons.date_range_rounded),
+        _buildDetailItem('Week 3', '-\$2,100.00', 'Apr 15 - Apr 21', Colors.red, Icons.warning_amber_rounded),
+        _buildDetailItem('Week 4', '-\$450.00', 'Apr 22 - Apr 30', Colors.blue, Icons.date_range_rounded),
       ],
     );
   }
@@ -237,192 +244,248 @@ class _ActivityViewState extends State<ActivityView> {
   Widget _buildYearBreakdown() {
     return Column(
       children: [
-        _buildDetailItem('January', '-\$4,200.00', 'Monthly Avg: \$3,500', Colors.green),
-        _buildDetailItem('February', '-\$3,800.00', 'Fixed Costs focus', Colors.green),
-        _buildDetailItem('March', '-\$5,100.00', 'Leisure & Travel', Colors.orange),
-        _buildDetailItem('April', '-\$4,980.00', 'Current Month', Colors.blue),
+        _buildDetailItem('January', '-\$4,200.00', 'Monthly Avg: \$3,500', Colors.green, Icons.analytics_rounded),
+        _buildDetailItem('February', '-\$3,800.00', 'Fixed Costs focus', Colors.green, Icons.analytics_rounded),
+        _buildDetailItem('March', '-\$5,100.00', 'Leisure & Travel', Colors.orange, Icons.beach_access_rounded),
+        _buildDetailItem('April', '-\$4,980.00', 'Current Month', Colors.blue, Icons.analytics_rounded),
       ],
     );
   }
 
-  Widget _buildWeekView(Color themeColor, Color textMain, Color textMuted) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(_days.length, (index) {
-        final day = _days[index];
-        final isSelected = _selectedDayIndex == index;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedDayIndex = index),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? themeColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  day['label']!,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+  Widget _buildWeekView() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(_days.length, (index) {
+          final day = _days[index];
+          final isSelected = _selectedDayIndex == index;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedDayIndex = index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF4F3FF0) : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    day['label']!,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[400],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  day['day']!,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : textMain,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 8),
+                  Text(
+                    day['day']!,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 
-  Widget _buildCalendarView(Color themeColor, Color textMain, Color textMuted) {
+  Widget _buildCalendarView() {
     final List<String> weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const int daysInMonth = 30;
-    const int firstDayOffset = 3; // April 1, 2026 is Wed (S=0, M=1, T=2, W=3)
+    const int firstDayOffset = 3;
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: weekdays
-              .map((d) => SizedBox(
-                    width: 30,
-                    child: Text(d,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: textMuted, fontSize: 12, fontWeight: FontWeight.bold)),
-                  ))
-              .toList(),
-        ),
-        const SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisSpacing: 5,
-            crossAxisSpacing: 5,
-            childAspectRatio: 1,
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: weekdays
+                .map((d) => SizedBox(
+                      width: 30,
+                      child: Text(d,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[400], fontSize: 12, fontWeight: FontWeight.w800)),
+                    ))
+                .toList(),
           ),
-          itemCount: daysInMonth + firstDayOffset,
-          itemBuilder: (context, index) {
-            if (index < firstDayOffset) return const SizedBox();
-            final day = index - firstDayOffset + 1;
-            final isSelected = day == 21; // April 21st
-            return Center(
-              child: Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: isSelected ? themeColor : Colors.transparent,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    day.toString(),
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : textMain,
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 1,
+            ),
+            itemCount: daysInMonth + firstDayOffset,
+            itemBuilder: (context, index) {
+              if (index < firstDayOffset) return const SizedBox();
+              final day = index - firstDayOffset + 1;
+              final isSelected = day == 21;
+              return Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF4F3FF0) : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      day.toString(),
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMonthView(Color themeColor, Color textMain, Color textMuted) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 2,
+              );
+            },
+          ),
+        ],
       ),
-      itemCount: 12,
-      itemBuilder: (context, index) {
-        final isSelected = index == 3; // April
-        return Container(
-          decoration: BoxDecoration(
-            color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.black12),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            months[index],
-            style: TextStyle(
-              color: isSelected ? Colors.white : textMain,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        );
-      },
     );
   }
 
-  Widget _buildYearView(Color themeColor, Color textMain, Color textMuted) {
+  Widget _buildMonthView() {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 2,
+        ),
+        itemCount: 12,
+        itemBuilder: (context, index) {
+          final isSelected = index == 3; // April
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFF4F3FF0) : const Color(0xFFFBFBFF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.withValues(alpha: 0.05)),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              months[index],
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildYearView() {
     final years = ['2023', '2024', '2025', '2026'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: years.map((year) {
-        final isSelected = year == '2026';
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? themeColor : Colors.white.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isSelected ? Colors.transparent : Colors.black12),
-          ),
-          child: Text(
-            year,
-            style: TextStyle(
-              color: isSelected ? Colors.white : textMain,
-              fontWeight: FontWeight.bold,
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: years.map((year) {
+          final isSelected = year == '2026';
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFF4F3FF0) : const Color(0xFFFBFBFF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.withValues(alpha: 0.05)),
             ),
-          ),
-        );
-      }).toList(),
+            child: Text(
+              year,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
-  Widget _buildDetailItem(String title, String amount, String time, Color iconColor) {
+  Widget _buildDetailItem(String title, String amount, String time, Color iconColor, IconData icon) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black12.withValues(alpha: 0.05)),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 4)),
+        ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: iconColor.withValues(alpha: 0.1),
-          child: Icon(Icons.circle, color: iconColor, size: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(time),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A)),
+        ),
+        subtitle: Text(
+          time,
+          style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600, fontSize: 13),
+        ),
         trailing: Text(
           amount,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+          style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFFE74C3C), fontSize: 16),
         ),
       ),
     );
