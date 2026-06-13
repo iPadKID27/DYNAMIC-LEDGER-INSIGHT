@@ -115,7 +115,6 @@ class _NetWorthViewState extends State<NetWorthView> {
                       Container(
                         width: 40,
                         height: 5,
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(10)),
                       ),
                       const SizedBox(height: 24),
                       const Padding(

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_event.dart';
 import 'settings_view.dart';
 
 class ProfileView extends StatelessWidget {
@@ -160,7 +163,9 @@ class ProfileView extends StatelessWidget {
                   width: double.infinity,
                   height: 60,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      context.read<AuthBloc>().add(AuthLogoutRequested());
+                    },
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.redAccent,
                       shape: RoundedRectangleBorder(
