@@ -31,11 +31,3 @@ class LedgerRecordDeleted extends NetViewEvent {
   @override
   List<Object?> get props => [recordId];
 }
-
-class AICategoryMappingRequested extends NetViewEvent {
-  final String note;
-  const AICategoryMappingRequested(this.note);
-
-  @override
-  List<Object?> get props => [note];
-}

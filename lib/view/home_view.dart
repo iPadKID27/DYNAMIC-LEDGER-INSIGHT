@@ -1,117 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/netview_bloc.dart';
+import '../bloc/netview_event.dart';
+import '../bloc/netview_state.dart';
+import '../model/financial_record.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                // Header / AppBar Replacement
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocBuilder<NetViewBloc, NetViewState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FE),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hello,',
-                          style: TextStyle(
-                            fontSize: 28,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          'The one who wait!',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF1A1A1A),
-                            height: 1.1,
-                          ),
-                        ),
-                      ],
-                    ),
+                    const SizedBox(height: 20),
+                    // Header / AppBar Replacement
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildCircleAction(Icons.search_rounded),
-                        const SizedBox(width: 12),
-                        _buildCircleAction(Icons.notifications_none_rounded, hasNotification: true),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hello,',
+                              style: TextStyle(
+                                fontSize: 28,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              'The one who wait!',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1A1A1A),
+                                height: 1.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            _buildCircleAction(Icons.search_rounded),
+                            const SizedBox(width: 12),
+                            _buildCircleAction(Icons.notifications_none_rounded, hasNotification: true),
+                          ],
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 32),
+
+                    // Total Balance Card
+                    _buildBalanceCard(state.records),
+                    const SizedBox(height: 32),
+
+                    // Assets Values Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Asset Values',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        Text(
+                          'See all',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildAssetsList(state.records),
+                    const SizedBox(height: 32),
+
+                    // Recent Transactions Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Recent Transactions',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        Text(
+                          'See all',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTransactionList(state.records),
+                    const SizedBox(height: 40),
                   ],
                 ),
-                const SizedBox(height: 32),
-
-                // Total Balance Card
-                _buildBalanceCard(),
-                const SizedBox(height: 32),
-
-                // Assets Values Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Asset Values',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    Text(
-                      'See all',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildAssetsList(),
-                const SizedBox(height: 32),
-
-                // Recent Transactions Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Recent Transactions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    Text(
-                      'See all',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildTransactionList(),
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -126,7 +136,7 @@ class HomeView extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -152,7 +162,15 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard() {
+  Widget _buildBalanceCard(List<FinancialRecord> records) {
+    double income = 0;
+    double expense = 0;
+    for (var r in records) {
+      if (r.type == RecordType.income) income += r.amount;
+      else if (r.type == RecordType.expense) expense += r.amount;
+    }
+    double balance = income - expense;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -165,7 +183,7 @@ class HomeView extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4F3FF0).withValues(alpha: 0.3),
+            color: const Color(0xFF4F3FF0).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -177,20 +195,20 @@ class HomeView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                  SizedBox(height: 4),
+                  const Text('Total Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const SizedBox(height: 4),
                   Text(
-                    '\$12,450.00',
-                    style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800),
+                    '\$${balance.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
                 child: const Row(
                   children: [
                     Icon(Icons.trending_up, color: Colors.white, size: 16),
@@ -204,9 +222,9 @@ class HomeView extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              _buildSimpleStat('Income', '+\$4,200'),
+              _buildSimpleStat('Income', '+\$${income.toStringAsFixed(0)}'),
               const SizedBox(width: 40),
-              _buildSimpleStat('Expenses', '-\$1,800'),
+              _buildSimpleStat('Expenses', '-\$${expense.toStringAsFixed(0)}'),
             ],
           ),
         ],
@@ -225,27 +243,30 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildAssetsList() {
-    final assets = [
-      {'title': 'Bitcoin', 'value': '\$45,200', 'subtitle': 'Crypto Portfolio', 'icon': Icons.currency_bitcoin_rounded, 'isPrimary': true},
-      {'title': 'Tesla Stock', 'value': '\$12,400', 'subtitle': 'Stocks & Equity', 'icon': Icons.electric_car_rounded, 'isPrimary': false},
-      {'title': 'Real Estate', 'value': '\$250k', 'subtitle': 'Property', 'icon': Icons.home_work_rounded, 'isPrimary': false},
-    ];
+  Widget _buildAssetsList(List<FinancialRecord> records) {
+    final assetRecords = records.where((r) => r.type == RecordType.asset).toList();
+    
+    if (assetRecords.isEmpty) {
+      return const SizedBox(
+        height: 100,
+        child: Center(child: Text('No assets recorded', style: TextStyle(color: Colors.grey))),
+      );
+    }
 
     return SizedBox(
       height: 170,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: assets.length,
+        itemCount: assetRecords.length,
         separatorBuilder: (context, index) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
-          final asset = assets[index];
+          final asset = assetRecords[index];
           return _buildAssetCard(
-            asset['title'] as String,
-            asset['value'] as String,
-            asset['subtitle'] as String,
-            asset['icon'] as IconData,
-            asset['isPrimary'] as bool,
+            asset.assetSymbol ?? asset.category,
+            '\$${asset.amount.toStringAsFixed(0)}',
+            asset.category,
+            Icons.account_balance_wallet_rounded,
+            index == 0,
           );
         },
       ),
@@ -262,8 +283,8 @@ class HomeView extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isPrimary 
-              ? const Color(0xFF4F3FF0).withValues(alpha: 0.2)
-              : Colors.black.withValues(alpha: 0.03),
+              ? const Color(0xFF4F3FF0).withOpacity(0.2)
+              : Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -275,7 +296,7 @@ class HomeView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isPrimary ? Colors.white.withValues(alpha: 0.15) : const Color(0xFFF8F9FE),
+              color: isPrimary ? Colors.white.withOpacity(0.15) : const Color(0xFFF8F9FE),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: isPrimary ? Colors.white : const Color(0xFF4F3FF0), size: 22),
@@ -303,13 +324,12 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionList() {
-    final transactions = [
-      {'title': 'Grocery Store', 'amount': '-\$45.00', 'category': 'Food', 'icon': Icons.shopping_basket_rounded, 'color': Colors.orange},
-      {'title': 'Salary', 'amount': '+\$3,500.00', 'category': 'Income', 'icon': Icons.work_rounded, 'color': Colors.green},
-      {'title': 'Electricity Bill', 'amount': '-\$120.00', 'category': 'Utilities', 'icon': Icons.bolt_rounded, 'color': Colors.blue},
-      {'title': 'Netflix Subscription', 'amount': '-\$15.00', 'category': 'Entertainment', 'icon': Icons.subscriptions_rounded, 'color': Colors.red},
-    ];
+  Widget _buildTransactionList(List<FinancialRecord> records) {
+    final transactions = records.take(5).toList();
+
+    if (transactions.isEmpty) {
+      return const Center(child: Text('No recent transactions', style: TextStyle(color: Colors.grey)));
+    }
 
     return ListView.separated(
       shrinkWrap: true,
@@ -318,8 +338,8 @@ class HomeView extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final tx = transactions[index];
-        final isPositive = (tx['amount'] as String).startsWith('+');
-        final iconColor = tx['color'] as Color;
+        final isPositive = tx.type == RecordType.income;
+        final iconColor = isPositive ? Colors.green : Colors.orange;
 
         return Container(
           padding: const EdgeInsets.all(12),
@@ -328,7 +348,7 @@ class HomeView extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: Colors.black.withOpacity(0.02),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               )
@@ -339,10 +359,10 @@ class HomeView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
+                  color: iconColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(tx['icon'] as IconData, color: iconColor, size: 20),
+                child: Icon(isPositive ? Icons.add_circle_outline : Icons.remove_circle_outline, color: iconColor, size: 20),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -350,18 +370,18 @@ class HomeView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tx['title'] as String,
+                      tx.note,
                       style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A), fontSize: 15),
                     ),
                     Text(
-                      tx['category'] as String,
+                      tx.category,
                       style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600, fontSize: 12),
                     ),
                   ],
                 ),
               ),
               Text(
-                tx['amount'] as String,
+                '${isPositive ? "+" : "-"}\$${tx.amount.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 15,

@@ -6,11 +6,9 @@ import 'view/main_navigation.dart';
 import 'view/login_view.dart';
 import 'repository/auth_repository.dart';
 import 'repository/ledger_repository.dart';
-import 'repository/ai_repository.dart';
 import 'bloc/auth/auth_bloc.dart';
 import 'bloc/auth/auth_state.dart';
 import 'bloc/netview_bloc.dart';
-import 'bloc/netview_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,11 +20,6 @@ void main() async {
       providers: [
         RepositoryProvider(create: (context) => AuthRepository()),
         RepositoryProvider(create: (context) => LedgerRepository()),
-        RepositoryProvider(
-          create: (context) => AIRepository(
-            apiKey: 'YOUR_GEMINI_API_KEY_HERE', // TODO: User should replace this
-          ),
-        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -38,7 +31,6 @@ void main() async {
           BlocProvider(
             create: (context) => NetViewBloc(
               ledgerRepository: context.read<LedgerRepository>(),
-              aiRepository: context.read<AIRepository>(),
             ),
           ),
         ],
