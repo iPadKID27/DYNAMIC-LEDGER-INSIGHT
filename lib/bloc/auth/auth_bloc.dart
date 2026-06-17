@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../repository/auth_repository.dart';
+import '../../model/user_profile.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -21,11 +22,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  void _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) {
-    emit(state.copyWith(
-      status: event.userId != null ? AuthStatus.authenticated : AuthStatus.unauthenticated,
-      userId: event.userId,
-    ));
+  Future<void> _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) async {
+    if (event.userId != null) {
+      final profile = await _authRepository.getUserProfile(event.userId!);
+      emit(state.copyWith(
+        status: AuthStatus.authenticated,
+        userId: event.userId,
+        userProfile: profile,
+      ));
+    } else {
+      emit(state.copyWith(
+        status: AuthStatus.unauthenticated,
+        userId: null,
+        userProfile: null,
+      ));
+    }
   }
 
   Future<void> _onLoginRequested(AuthLoginRequested event, Emitter<AuthState> emit) async {
@@ -40,7 +51,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onSignUpRequested(AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.loading));
     try {
-      await _authRepository.signUp(email: event.email, password: event.password);
+      final userCredential = await _authRepository.signUp(email: event.email, password: event.password);
+      if (userCredential.user != null) {
+        final profile = UserProfile(
+          userId: userCredential.user!.uid,
+          email: event.email,
+          fullName: event.fullName,
+          createdAt: DateTime.now(),
+        );
+        await _authRepository.createUserProfile(profile);
+      }
     } catch (e) {
       emit(state.copyWith(status: AuthStatus.error, errorMessage: e.toString()));
     }

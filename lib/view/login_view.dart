@@ -14,12 +14,14 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _fullNameController = TextEditingController();
   bool _isSignUp = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _fullNameController.dispose();
     super.dispose();
   }
 
@@ -83,6 +85,22 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                   const SizedBox(height: 40),
+                  if (_isSignUp) ...[
+                    TextField(
+                      controller: _fullNameController,
+                      decoration: InputDecoration(
+                        hintText: 'Full Name',
+                        filled: true,
+                        fillColor: const Color(0xFFF5F5F5),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.person_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -119,12 +137,33 @@ class _LoginViewState extends State<LoginView> {
                         : () {
                             final email = _emailController.text.trim();
                             final password = _passwordController.text.trim();
-                            if (email.isNotEmpty && password.isNotEmpty) {
-                              if (_isSignUp) {
-                                context.read<AuthBloc>().add(AuthSignUpRequested(email, password));
-                              } else {
-                                context.read<AuthBloc>().add(AuthLoginRequested(email, password));
-                              }
+                            final fullName = _fullNameController.text.trim();
+                            
+                            if (email.isEmpty || password.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please fill in all fields')),
+                              );
+                              return;
+                            }
+
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Invalid email format')),
+                              );
+                              return;
+                            }
+
+                            if (password.length < 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Password must be at least 6 characters')),
+                              );
+                              return;
+                            }
+
+                            if (_isSignUp) {
+                              context.read<AuthBloc>().add(AuthSignUpRequested(email, password, fullName.isEmpty ? 'New User' : fullName));
+                            } else {
+                              context.read<AuthBloc>().add(AuthLoginRequested(email, password));
                             }
                           },
                     style: ElevatedButton.styleFrom(

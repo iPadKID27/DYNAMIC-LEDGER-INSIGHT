@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_state.dart';
 import '../bloc/netview_bloc.dart';
 import '../bloc/netview_event.dart';
 import '../bloc/netview_state.dart';
@@ -45,6 +46,8 @@ class _MainNavigationState extends State<MainNavigation> {
   void _showAddTransactionDialog() {
     final descriptionController = TextEditingController();
     final amountController = TextEditingController();
+    final assetSymbolController = TextEditingController();
+    final assetQuantityController = TextEditingController();
     
     showModalBottomSheet(
       context: context,
@@ -53,13 +56,20 @@ class _MainNavigationState extends State<MainNavigation> {
       builder: (context) {
         DateTime selectedDate = DateTime.now();
         RecordType selectedType = RecordType.expense;
-        String selectedCategory = 'Variable Outflows';
+        
+        final categories = {
+          RecordType.income: ['Active Income', 'Passive Income', 'Others'],
+          RecordType.expense: ['Saving Outflows', 'Fixed Outflows', 'Installment Payments', 'Variable Outflows'],
+          RecordType.asset: ['Liquid Assets', 'Investment Assets', 'Personal Use Assets'],
+        };
+        
+        String selectedCategory = categories[selectedType]![0];
 
         return StatefulBuilder(
           builder: (context, setModalState) {
             return DraggableScrollableSheet(
-              initialChildSize: 0.8,
-              minChildSize: 0.4,
+              initialChildSize: 0.9,
+              minChildSize: 0.5,
               maxChildSize: 0.95,
               expand: false,
               builder: (context, scrollController) {
@@ -91,7 +101,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     const Text(
-                                      'Add Transaction',
+                                      'Add Entry',
                                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A)),
                                     ),
                                     IconButton(
@@ -110,11 +120,42 @@ class _MainNavigationState extends State<MainNavigation> {
                                         child: ChoiceChip(
                                           label: Text(type.name.toUpperCase()),
                                           selected: selectedType == type,
-                                          onSelected: (val) => setModalState(() => selectedType = type),
+                                          onSelected: (val) {
+                                            setModalState(() {
+                                              selectedType = type;
+                                              selectedCategory = categories[type]![0];
+                                            });
+                                          },
                                         ),
                                       ),
                                     );
                                   }).toList(),
+                                ),
+                                const SizedBox(height: 24),
+                                // Category Selection
+                                const Text(
+                                  'Category',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F7),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedCategory,
+                                      isExpanded: true,
+                                      items: categories[selectedType]!.map((cat) {
+                                        return DropdownMenuItem(value: cat, child: Text(cat));
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        if (val != null) setModalState(() => selectedCategory = val);
+                                      },
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(height: 24),
                                 const Text(
@@ -133,22 +174,84 @@ class _MainNavigationState extends State<MainNavigation> {
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                const Text(
-                                  'Amount (THB)',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Amount (THB)',
+                                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          TextField(
+                                            controller: amountController,
+                                            keyboardType: TextInputType.number,
+                                            decoration: InputDecoration(
+                                              hintText: '0.00',
+                                              prefixIcon: const Icon(Icons.payments_outlined, color: Color(0xFF4F3FF0)),
+                                              filled: true,
+                                              fillColor: const Color(0xFFF5F5F7),
+                                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 12),
-                                TextField(
-                                  controller: amountController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    hintText: '0.00',
-                                    prefixIcon: const Icon(Icons.payments_outlined, color: Color(0xFF4F3FF0)),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF5F5F7),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                                if (selectedType == RecordType.asset) ...[
+                                  const SizedBox(height: 24),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Symbol',
+                                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            TextField(
+                                              controller: assetSymbolController,
+                                              decoration: InputDecoration(
+                                                hintText: 'BTC, Gold, AAPL',
+                                                filled: true,
+                                                fillColor: const Color(0xFFF5F5F7),
+                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Quantity',
+                                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            TextField(
+                                              controller: assetQuantityController,
+                                              keyboardType: TextInputType.number,
+                                              decoration: InputDecoration(
+                                                hintText: '0.0',
+                                                filled: true,
+                                                fillColor: const Color(0xFFF5F5F7),
+                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
+                                ],
                                 const SizedBox(height: 24),
                                 const Text(
                                   'When did it happen?',
@@ -164,16 +267,32 @@ class _MainNavigationState extends State<MainNavigation> {
                                   height: 60,
                                   child: ElevatedButton(
                                     onPressed: () {
+                                      final note = descriptionController.text.trim();
+                                      final amountStr = amountController.text.trim();
+                                      final amount = double.tryParse(amountStr) ?? 0.0;
+                                      
+                                      if (note.isEmpty || amount <= 0) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Please enter a valid amount and note.'),
+                                            backgroundColor: Colors.redAccent,
+                                          ),
+                                        );
+                                        return;
+                                      }
+
                                       final userId = context.read<AuthBloc>().state.userId;
                                       if (userId != null) {
                                         final record = FinancialRecord(
                                           id: '',
                                           userId: userId,
-                                          amount: double.tryParse(amountController.text) ?? 0.0,
+                                          amount: amount,
                                           date: selectedDate,
-                                          note: descriptionController.text,
+                                          note: note,
                                           type: selectedType,
                                           category: selectedCategory,
+                                          assetSymbol: selectedType == RecordType.asset ? assetSymbolController.text : null,
+                                          assetQuantity: selectedType == RecordType.asset ? double.tryParse(assetQuantityController.text) : null,
                                         );
                                         context.read<NetViewBloc>().add(LedgerRecordAdded(record));
                                         Navigator.pop(context);
@@ -184,7 +303,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                     ),
-                                    child: const Text('Save Transaction', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                                    child: const Text('Save Entry', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                                   ),
                                 ),
                                 const SizedBox(height: 20),
