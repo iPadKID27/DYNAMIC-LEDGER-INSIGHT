@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -24,8 +25,9 @@ void main() {
     });
 
     Widget createWidget() {
-      return MaterialApp(
-        home: BlocProvider<AuthBloc>.value(value: authBloc, child: const LoginView()),
+      return BlocProvider<AuthBloc>.value(
+        value: authBloc,
+        child: const MaterialApp(home: LoginView()),
       );
     }
 
@@ -52,6 +54,29 @@ void main() {
 
       expect(find.text('Password must be at least 6 characters'), findsOneWidget);
     });
+
+    testWidgets('shows network error SnackBar on signup failure (STC-01-TC-5)', (tester) async {
+      final streamController = StreamController<AuthState>.broadcast();
+      when(() => authBloc.stream).thenAnswer((_) => streamController.stream);
+      when(() => authBloc.state).thenReturn(const AuthState(status: AuthStatus.unauthenticated));
+
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(TextButton));
+      await tester.pumpAndSettle();
+
+      const errorState = AuthState(
+        status: AuthStatus.error,
+        errorMessage: 'Network error occurred',
+      );
+      when(() => authBloc.state).thenReturn(errorState);
+      streamController.add(errorState);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Network error occurred'), findsOneWidget);
+      await streamController.close();
+    });
   });
 
   group('Manual Entry (MainNavigation)', () {
@@ -73,18 +98,18 @@ void main() {
     });
 
     Widget createWidget() {
-      return MaterialApp(
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider<AuthBloc>.value(value: authBloc),
-            BlocProvider<NetViewBloc>.value(value: netViewBloc),
-          ],
-          child: const MainNavigation(),
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>.value(value: authBloc),
+          BlocProvider<NetViewBloc>.value(value: netViewBloc),
+        ],
+        child: const MaterialApp(
+          home: MainNavigation(),
         ),
       );
     }
 
-    testWidgets('shows error SnackBar when saving with empty amount/note (UTC-14)', (tester) async {
+    testWidgets('shows error Dialog when saving with empty amount/note (UTC-14)', (tester) async {
       await tester.pumpWidget(createWidget());
 
       // Tap Add button
@@ -105,6 +130,51 @@ void main() {
 
       // Verify SnackBar
       expect(find.text('Please enter a valid amount and note.'), findsOneWidget);
+    });
+
+    testWidgets('shows error Dialog when amount has >2 decimal places (UTC-14-TC-03)', (tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).at(1), '30.123'); // Amount
+      await tester.enterText(find.byType(TextField).at(0), 'Lunch'); // Note
+      
+      final saveButton = find.text('Save Entry');
+      await tester.ensureVisible(saveButton);
+      await tester.pumpAndSettle();
+      await tester.tap(saveButton);
+      await tester.pump();
+
+      expect(find.text('Amount can have at most 2 decimal places.'), findsOneWidget);
+    });
+
+    testWidgets('shows Confirmation Popup on valid input (UTC-14-TC-04)', (tester) async {
+      // Needs fallback value for mocktail 'any()' or we just let it call. 
+      // We don't strictly need verify() if we just check dialog closure.
+      await tester.pumpWidget(createWidget());
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).at(1), '30.12'); // Amount
+      await tester.enterText(find.byType(TextField).at(0), 'Lunch'); // Note
+      
+      final saveButton = find.text('Save Entry');
+      await tester.ensureVisible(saveButton);
+      await tester.pumpAndSettle();
+      await tester.tap(saveButton);
+      await tester.pumpAndSettle();
+
+      // Verify AlertDialog is shown
+      expect(find.text('Confirm Entry'), findsOneWidget);
+      expect(find.text('THB 30.12'), findsOneWidget);
+
+      // Tap Confirm
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+
+      // Verify dialog is closed
+      expect(find.text('Confirm Entry'), findsNothing);
     });
   });
 }

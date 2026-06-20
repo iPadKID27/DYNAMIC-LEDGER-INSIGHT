@@ -16,10 +16,11 @@ class LedgerRepository {
   Stream<List<FinancialRecord>> getRecords(String userId) {
     return _recordsCollection
         .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => FinancialRecord.fromDocument(doc)).toList();
+      final records = snapshot.docs.map((doc) => FinancialRecord.fromDocument(doc)).toList();
+      records.sort((a, b) => b.date.compareTo(a.date));
+      return records;
     });
   }
 

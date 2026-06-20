@@ -14,7 +14,7 @@ import 'package:netviewdemo/bloc/netview_bloc.dart';
 import 'package:netviewdemo/bloc/netview_event.dart';
 import 'package:netviewdemo/bloc/netview_state.dart';
 
-// Mocks
+// ignore_for_file: subtype_of_sealed_class
 class MockAuthRepository extends Mock implements AuthRepository {}
 class MockLedgerRepository extends Mock implements LedgerRepository {}
 class MockFirebaseAuth extends Mock implements firebase_auth.FirebaseAuth {}
@@ -205,6 +205,12 @@ void main() {
         when(() => authRepository.signUp(email: any(named: 'email'), password: any(named: 'password')))
             .thenAnswer((_) async => mockUserCredential);
         when(() => authRepository.createUserProfile(any())).thenAnswer((_) async => {});
+        when(() => authRepository.getUserProfile(any())).thenAnswer((_) async => UserProfile(
+              userId: 'test_uid',
+              email: 'test@example.com',
+              fullName: 'Test User',
+              createdAt: DateTime.now(),
+            ));
         return AuthBloc(authRepository: authRepository);
       },
       act: (bloc) => bloc.add(const AuthSignUpRequested('test@example.com', 'password', 'Test User')),
@@ -280,8 +286,7 @@ void main() {
 
       when(() => mockFirestore.collection('records')).thenReturn(mockCollection);
       when(() => mockCollection.where('userId', isEqualTo: userId)).thenReturn(mockQuery1);
-      when(() => mockQuery1.orderBy('date', descending: true)).thenReturn(mockQuery2);
-      when(() => mockQuery2.snapshots()).thenAnswer((_) => Stream.value(MockQuerySnapshot()));
+      when(() => mockQuery1.snapshots()).thenAnswer((_) => Stream.value(MockQuerySnapshot()));
 
       final result = ledgerRepository.getRecords(userId);
 

@@ -8,6 +8,7 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   StreamSubscription? _userSubscription;
+  bool _isSigningUp = false;
 
   AuthBloc({required AuthRepository authRepository})
       : _authRepository = authRepository,
@@ -18,18 +19,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLogoutRequested>(_onLogoutRequested);
 
     _userSubscription = _authRepository.user.listen((user) {
-      add(AuthUserChanged(user?.uid));
+      if (!_isSigningUp) {
+        add(AuthUserChanged(user?.uid));
+      }
     });
   }
 
   Future<void> _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) async {
     if (event.userId != null) {
       final profile = await _authRepository.getUserProfile(event.userId!);
-      emit(state.copyWith(
-        status: AuthStatus.authenticated,
-        userId: event.userId,
-        userProfile: profile,
-      ));
+      if (profile == null) {
+        emit(state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'User Profile Document Not Found',
+        ));
+        await _authRepository.logOut();
+      } else {
+        emit(state.copyWith(
+          status: AuthStatus.authenticated,
+          userId: event.userId,
+          userProfile: profile,
+        ));
+      }
     } else {
       emit(state.copyWith(
         status: AuthStatus.unauthenticated,
@@ -44,12 +55,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _authRepository.logIn(email: event.email, password: event.password);
     } catch (e) {
-      emit(state.copyWith(status: AuthStatus.error, errorMessage: e.toString()));
+      emit(state.copyWith(status: AuthStatus.error, errorMessage: e.toString().replaceAll('Exception: ', '')));
     }
   }
 
   Future<void> _onSignUpRequested(AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.loading));
+    _isSigningUp = true;
     try {
       final userCredential = await _authRepository.signUp(email: event.email, password: event.password);
       if (userCredential.user != null) {
@@ -60,9 +72,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           createdAt: DateTime.now(),
         );
         await _authRepository.createUserProfile(profile);
+        
+        _isSigningUp = false;
+        add(AuthUserChanged(userCredential.user!.uid));
       }
     } catch (e) {
-      emit(state.copyWith(status: AuthStatus.error, errorMessage: e.toString()));
+      _isSigningUp = false;
+      emit(state.copyWith(status: AuthStatus.error, errorMessage: e.toString().replaceAll('Exception: ', '')));
     }
   }
 

@@ -25,6 +25,25 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600))),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.redAccent.shade700,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+        elevation: 6,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,9 +51,7 @@ class _LoginViewState extends State<LoginView> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.status == AuthStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? 'Authentication Error')),
-            );
+            _showErrorSnackBar(context, state.errorMessage ?? 'Authentication Error');
           }
         },
         builder: (context, state) {
@@ -140,23 +157,17 @@ class _LoginViewState extends State<LoginView> {
                             final fullName = _fullNameController.text.trim();
                             
                             if (email.isEmpty || password.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please fill in all fields')),
-                              );
+                              _showErrorSnackBar(context, 'Please fill in all fields');
                               return;
                             }
 
                             if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Invalid email format')),
-                              );
+                              _showErrorSnackBar(context, 'Invalid email format');
                               return;
                             }
 
                             if (password.length < 6) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Password must be at least 6 characters')),
-                              );
+                              _showErrorSnackBar(context, 'Password must be at least 6 characters');
                               return;
                             }
 

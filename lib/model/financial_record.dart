@@ -11,7 +11,7 @@ class FinancialRecord extends Equatable {
   final String note;
   final RecordType type;
   final String category;
-  final String? assetSymbol; // For assets like BTC, Gold, Stocks
+  final String? assetSymbol;
   final double? assetQuantity;
 
   const FinancialRecord({

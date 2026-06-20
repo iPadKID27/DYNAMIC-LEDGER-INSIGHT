@@ -20,6 +20,17 @@ class AuthRepository {
         email: email,
         password: password,
       );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          throw Exception('This email is already registered. Please sign in.');
+        case 'invalid-email':
+          throw Exception('The email address is not valid.');
+        case 'weak-password':
+          throw Exception('The password is too weak.');
+        default:
+          throw Exception(e.message ?? 'An unknown error occurred during sign up.');
+      }
     } catch (e) {
       throw Exception('Failed to sign up: $e');
     }
@@ -51,6 +62,20 @@ class AuthRepository {
         email: email,
         password: password,
       );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          throw Exception('No account found for this email address.');
+        case 'wrong-password':
+        case 'invalid-credential':
+          throw Exception('Invalid email or password.');
+        case 'invalid-email':
+          throw Exception('The email address is not valid.');
+        case 'user-disabled':
+          throw Exception('This account has been disabled.');
+        default:
+          throw Exception(e.message ?? 'An unknown error occurred during log in.');
+      }
     } catch (e) {
       throw Exception('Failed to log in: $e');
     }

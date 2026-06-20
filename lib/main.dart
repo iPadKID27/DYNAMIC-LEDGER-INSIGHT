@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'NetView Demo',
+      title: 'DYNAMIC LEDGER INSIGHT Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -56,14 +56,8 @@ class MyApp extends StatelessWidget {
         builder: (context, state) {
           if (state.status == AuthStatus.authenticated) {
             return const MainNavigation();
-          } else if (state.status == AuthStatus.unauthenticated || state.status == AuthStatus.error) {
-            return const LoginView();
           } else {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
+            return const LoginView();
           }
         },
       ),

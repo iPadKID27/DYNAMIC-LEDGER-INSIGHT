@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
-import '../bloc/auth/auth_state.dart';
 import '../bloc/netview_bloc.dart';
 import '../bloc/netview_event.dart';
-import '../bloc/netview_state.dart';
 import '../model/financial_record.dart';
 import 'home_view.dart';
 import 'profile_view.dart';
@@ -272,10 +270,88 @@ class _MainNavigationState extends State<MainNavigation> {
                                       final amount = double.tryParse(amountStr) ?? 0.0;
                                       
                                       if (note.isEmpty || amount <= 0) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Please enter a valid amount and note.'),
-                                            backgroundColor: Colors.redAccent,
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => Dialog(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                            backgroundColor: Colors.white,
+                                            elevation: 10,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(24.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.all(16),
+                                                    decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.1), shape: BoxShape.circle),
+                                                    child: const Icon(Icons.error_outline, color: Colors.redAccent, size: 36),
+                                                  ),
+                                                  const SizedBox(height: 20),
+                                                  const Text('Invalid Input', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E))),
+                                                  const SizedBox(height: 8),
+                                                  const Text('Please enter a valid amount and note.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Colors.grey)),
+                                                  const SizedBox(height: 32),
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: ElevatedButton(
+                                                      onPressed: () => Navigator.pop(ctx),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.redAccent,
+                                                        foregroundColor: Colors.white,
+                                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                        elevation: 0,
+                                                      ),
+                                                      child: const Text('Got it', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      if (selectedType != RecordType.asset && !RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(amountStr)) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => Dialog(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                            backgroundColor: Colors.white,
+                                            elevation: 10,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(24.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.all(16),
+                                                    decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.1), shape: BoxShape.circle),
+                                                    child: const Icon(Icons.error_outline, color: Colors.redAccent, size: 36),
+                                                  ),
+                                                  const SizedBox(height: 20),
+                                                  const Text('Invalid Amount', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E))),
+                                                  const SizedBox(height: 8),
+                                                  const Text('Amount can have at most 2 decimal places.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Colors.grey)),
+                                                  const SizedBox(height: 32),
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: ElevatedButton(
+                                                      onPressed: () => Navigator.pop(ctx),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.redAccent,
+                                                        foregroundColor: Colors.white,
+                                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                        elevation: 0,
+                                                      ),
+                                                      child: const Text('Got it', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                           ),
                                         );
                                         return;
@@ -294,8 +370,104 @@ class _MainNavigationState extends State<MainNavigation> {
                                           assetSymbol: selectedType == RecordType.asset ? assetSymbolController.text : null,
                                           assetQuantity: selectedType == RecordType.asset ? double.tryParse(assetQuantityController.text) : null,
                                         );
-                                        context.read<NetViewBloc>().add(LedgerRecordAdded(record));
-                                        Navigator.pop(context);
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (dialogContext) {
+                                            return Dialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(24),
+                                              ),
+                                              backgroundColor: Colors.white,
+                                              elevation: 10,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(24.0),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          padding: const EdgeInsets.all(10),
+                                                          decoration: BoxDecoration(
+                                                            color: const Color(0xFF4F3FF0).withOpacity(0.1),
+                                                            shape: BoxShape.circle,
+                                                          ),
+                                                          child: const Icon(Icons.check_circle_outline, color: Color(0xFF4F3FF0), size: 28),
+                                                        ),
+                                                        const SizedBox(width: 16),
+                                                        const Text(
+                                                          'Confirm Entry',
+                                                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E)),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 24),
+                                                    Container(
+                                                      padding: const EdgeInsets.all(16),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFFF5F5F7),
+                                                        borderRadius: BorderRadius.circular(16),
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          _buildDetailRow('Type', record.type.name.toUpperCase(), isHighlight: true),
+                                                          const Divider(height: 24, color: Colors.black12),
+                                                          _buildDetailRow('Category', record.category),
+                                                          const SizedBox(height: 12),
+                                                          _buildDetailRow('Amount', 'THB ${record.amount.toStringAsFixed(2)}'),
+                                                          const SizedBox(height: 12),
+                                                          _buildDetailRow('Note', record.note),
+                                                          if (record.type == RecordType.asset) ...[
+                                                            const SizedBox(height: 12),
+                                                            _buildDetailRow('Symbol', record.assetSymbol ?? ''),
+                                                            const SizedBox(height: 12),
+                                                            _buildDetailRow('Quantity', record.assetQuantity?.toString() ?? ''),
+                                                          ],
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 32),
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: TextButton(
+                                                            onPressed: () => Navigator.pop(dialogContext),
+                                                            style: TextButton.styleFrom(
+                                                              padding: const EdgeInsets.symmetric(vertical: 16),
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                            ),
+                                                            child: const Text('Cancel', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 16),
+                                                        Expanded(
+                                                          child: ElevatedButton(
+                                                            onPressed: () {
+                                                              context.read<NetViewBloc>().add(LedgerRecordAdded(record));
+                                                              Navigator.pop(dialogContext); // Close dialog
+                                                              Navigator.pop(context); // Close bottom sheet
+                                                            },
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: const Color(0xFF4F3FF0),
+                                                              foregroundColor: Colors.white,
+                                                              padding: const EdgeInsets.symmetric(vertical: 16),
+                                                              elevation: 0,
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                            ),
+                                                            child: const Text('Confirm', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -320,6 +492,30 @@ class _MainNavigationState extends State<MainNavigation> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool isHighlight = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black54,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            color: isHighlight ? const Color(0xFF4F3FF0) : const Color(0xFF1E1E1E),
+            fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

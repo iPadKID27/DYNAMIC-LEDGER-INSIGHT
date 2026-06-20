@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/auth/auth_state.dart';
 import '../bloc/netview_bloc.dart';
-import '../bloc/netview_event.dart';
 import '../bloc/netview_state.dart';
 import '../model/financial_record.dart';
 
