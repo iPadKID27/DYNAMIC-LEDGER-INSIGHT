@@ -47,21 +47,23 @@ class _MainNavigationState extends State<MainNavigation> {
     final assetSymbolController = TextEditingController();
     final assetQuantityController = TextEditingController();
     
+    DateTime selectedDate = DateTime.now();
+    RecordType selectedType = RecordType.expense;
+    
+    final categories = {
+      RecordType.income: ['Active Income', 'Passive Income', 'Others'],
+      RecordType.expense: ['Saving Outflows', 'Fixed Outflows', 'Installment Payments', 'Variable Outflows'],
+      RecordType.asset: ['Liquid Assets', 'Investment Assets', 'Personal Use Assets'],
+    };
+    
+    String selectedCategory = categories[selectedType]![0];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        DateTime selectedDate = DateTime.now();
-        RecordType selectedType = RecordType.expense;
-        
-        final categories = {
-          RecordType.income: ['Active Income', 'Passive Income', 'Others'],
-          RecordType.expense: ['Saving Outflows', 'Fixed Outflows', 'Installment Payments', 'Variable Outflows'],
-          RecordType.asset: ['Liquid Assets', 'Investment Assets', 'Personal Use Assets'],
-        };
-        
-        String selectedCategory = categories[selectedType]![0];
+
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -163,6 +165,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                 const SizedBox(height: 12),
                                 TextField(
                                   controller: descriptionController,
+                                  maxLength: 120,
                                   decoration: InputDecoration(
                                     hintText: 'e.g., Dinner at Siam',
                                     prefixIcon: const Icon(Icons.description_outlined, color: Color(0xFF4F3FF0)),
@@ -186,6 +189,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                           TextField(
                                             controller: amountController,
                                             keyboardType: TextInputType.number,
+                                            maxLength: 20,
                                             decoration: InputDecoration(
                                               hintText: '0.00',
                                               prefixIcon: const Icon(Icons.payments_outlined, color: Color(0xFF4F3FF0)),
@@ -214,6 +218,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                             const SizedBox(height: 12),
                                             TextField(
                                               controller: assetSymbolController,
+                                              maxLength: 5,
                                               decoration: InputDecoration(
                                                 hintText: 'BTC, Gold, AAPL',
                                                 filled: true,
@@ -237,6 +242,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                             TextField(
                                               controller: assetQuantityController,
                                               keyboardType: TextInputType.number,
+                                              maxLength: 20,
                                               decoration: InputDecoration(
                                                 hintText: '0.0',
                                                 filled: true,
@@ -269,7 +275,10 @@ class _MainNavigationState extends State<MainNavigation> {
                                       final amountStr = amountController.text.trim();
                                       final amount = double.tryParse(amountStr) ?? 0.0;
                                       
-                                      if (note.isEmpty || amount <= 0) {
+                                      bool isAssetInvalid = selectedType == RecordType.asset && 
+                                        (assetSymbolController.text.trim().isEmpty || (double.tryParse(assetQuantityController.text.trim()) ?? 0.0) <= 0);
+
+                                      if (note.isEmpty || amount <= 0 || isAssetInvalid) {
                                         showDialog(
                                           context: context,
                                           builder: (ctx) => Dialog(
@@ -289,7 +298,7 @@ class _MainNavigationState extends State<MainNavigation> {
                                                   const SizedBox(height: 20),
                                                   const Text('Invalid Input', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E))),
                                                   const SizedBox(height: 8),
-                                                  const Text('Please enter a valid amount and note.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Colors.grey)),
+                                                  const Text('Please enter a valid amount, note, and asset details (if applicable).', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Colors.grey)),
                                                   const SizedBox(height: 32),
                                                   SizedBox(
                                                     width: double.infinity,

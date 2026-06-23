@@ -13,7 +13,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
-        final userName = authState.userProfile?.fullName ?? 'User';
+        final userName = authState.userProfile?.userName ?? 'User';
         
         return BlocBuilder<NetViewBloc, NetViewState>(
           builder: (context, state) {

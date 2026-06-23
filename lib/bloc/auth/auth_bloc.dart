@@ -68,7 +68,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final profile = UserProfile(
           userId: userCredential.user!.uid,
           email: event.email,
-          fullName: event.fullName,
+          userName: event.userName,
           createdAt: DateTime.now(),
         );
         await _authRepository.createUserProfile(profile);

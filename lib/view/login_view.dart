@@ -106,7 +106,7 @@ class _LoginViewState extends State<LoginView> {
                     TextField(
                       controller: _fullNameController,
                       decoration: InputDecoration(
-                        hintText: 'Full Name',
+                        hintText: 'User Name',
                         filled: true,
                         fillColor: const Color(0xFFF5F5F5),
                         border: OutlineInputBorder(
@@ -156,6 +156,11 @@ class _LoginViewState extends State<LoginView> {
                             final password = _passwordController.text.trim();
                             final fullName = _fullNameController.text.trim();
                             
+                            if (_isSignUp && fullName.isEmpty) {
+                              _showErrorSnackBar(context, 'Please enter a user name');
+                              return;
+                            }
+
                             if (email.isEmpty || password.isEmpty) {
                               _showErrorSnackBar(context, 'Please fill in all fields');
                               return;
@@ -172,7 +177,7 @@ class _LoginViewState extends State<LoginView> {
                             }
 
                             if (_isSignUp) {
-                              context.read<AuthBloc>().add(AuthSignUpRequested(email, password, fullName.isEmpty ? 'New User' : fullName));
+                              context.read<AuthBloc>().add(AuthSignUpRequested(email, password, fullName));
                             } else {
                               context.read<AuthBloc>().add(AuthLoginRequested(email, password));
                             }

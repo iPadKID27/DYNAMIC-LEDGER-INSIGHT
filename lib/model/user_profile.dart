@@ -4,23 +4,23 @@ import 'package:equatable/equatable.dart';
 class UserProfile extends Equatable {
   final String userId;
   final String email;
-  final String fullName;
+  final String userName;
   final DateTime createdAt;
 
   const UserProfile({
     required this.userId,
     required this.email,
-    required this.fullName,
+    required this.userName,
     required this.createdAt,
   });
 
   @override
-  List<Object?> get props => [userId, email, fullName, createdAt];
+  List<Object?> get props => [userId, email, userName, createdAt];
 
   Map<String, dynamic> toDocument() {
     return {
       'email': email,
-      'fullName': fullName,
+      'userName': userName,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -30,7 +30,7 @@ class UserProfile extends Equatable {
     return UserProfile(
       userId: doc.id,
       email: data['email'] ?? '',
-      fullName: data['fullName'] ?? '',
+      userName: data['userName'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
