@@ -14,14 +14,14 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _fullNameController = TextEditingController();
+  final _userNameController = TextEditingController();
   bool _isSignUp = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _fullNameController.dispose();
+    _userNameController.dispose();
     super.dispose();
   }
 
@@ -104,7 +104,7 @@ class _LoginViewState extends State<LoginView> {
                   const SizedBox(height: 40),
                   if (_isSignUp) ...[
                     TextField(
-                      controller: _fullNameController,
+                      controller: _userNameController,
                       decoration: InputDecoration(
                         hintText: 'User Name',
                         filled: true,
@@ -154,9 +154,9 @@ class _LoginViewState extends State<LoginView> {
                         : () {
                             final email = _emailController.text.trim();
                             final password = _passwordController.text.trim();
-                            final fullName = _fullNameController.text.trim();
+                            final userName = _userNameController.text.trim();
                             
-                            if (_isSignUp && fullName.isEmpty) {
+                            if (_isSignUp && userName.isEmpty) {
                               _showErrorSnackBar(context, 'Please enter a user name');
                               return;
                             }
@@ -177,7 +177,7 @@ class _LoginViewState extends State<LoginView> {
                             }
 
                             if (_isSignUp) {
-                              context.read<AuthBloc>().add(AuthSignUpRequested(email, password, fullName));
+                              context.read<AuthBloc>().add(AuthSignUpRequested(email, password, userName));
                             } else {
                               context.read<AuthBloc>().add(AuthLoginRequested(email, password));
                             }
